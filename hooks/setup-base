@@ -1,0 +1,13 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# setup-base: runs as root, before any plug is connected. Puts the wrapper
+# directory (not the real binary's) on PATH so every gh invocation goes
+# through the github-token secret lookup.
+
+set -euo pipefail
+
+cat <<EOF >/etc/profile.d/gh-cli.sh
+export PATH="$SDK/wrapper:\$PATH"
+EOF

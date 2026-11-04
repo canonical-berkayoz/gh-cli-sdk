@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright 2026 Canonical Ltd.
+#
+# Runs gh with the token from the connected github-token secret plug.
+# A GH_TOKEN or GITHUB_TOKEN already in the environment takes precedence.
+# If the plug is unconnected or the lookup fails, gh starts without a token
+# and falls back to its own login state (the gh-config mount); the silent
+# fallback is intentional.
+sdk_dir=$(dirname "$(dirname "$(readlink -f "$0")")")
+
+if [[ -z "${GH_TOKEN:-}" && -z "${GITHUB_TOKEN:-}" ]]; then
+  if token=$(workshopctl get-secret gh-cli.github-token 2>/dev/null) && [[ -n "$token" ]]; then
+    export GH_TOKEN="$token"
+  fi
+  unset token
+fi
+
+exec "$sdk_dir/libexec/gh" "$@"

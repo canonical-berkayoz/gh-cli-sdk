@@ -1,30 +1,20 @@
-# TODO: Adjust the branch pattern, platforms, and platform-flag for your SDK.
-#
-# Branch patterns:
-#   "[0-9]+"         — major-only branches (e.g., 20, 22, 24)
-#   "[0-9]+.[0-9]+"  — major.minor branches (e.g., 1.24, 7.1)
-#
-# Platforms:
-#   Single-base (build-base in sdkcraft.yaml):
-#     '["amd64"]'
-#     '["amd64","arm64","riscv64"]'
-#   Multi-base (no build-base, multiple ubuntu@ entries in platforms):
-#     '["ubuntu@22.04:amd64","ubuntu@24.04:amd64"]'
-#
-# Platform flag:
-#   --build-for  (default) — for single-base SDKs
-#   --platform             — for multi-base SDKs
+# Single `latest` track. Multi-base SDK, so platforms are BASE:ARCH pairs
+# matching sdkcraft.yaml and the platform flag is --platform.
+# The staging secret is deliberate: a fresh SDK must not publish to the
+# production Store. Flip to SDKCRAFT_STORE_CREDENTIALS_PROD when ready.
+# `risk` is left at the sdkcraft-actions default (edge); setting
+# `risk: "stable"` is the publish-store promotion step.
 
 name: Build and Upload SDK
 
 on:
   push:
     branches:
-      - "[0-9]+.[0-9]+"
+      - "latest"
   workflow_dispatch:
     inputs:
       branch:
-        description: "Branch name (e.g., 1.0)"
+        description: "Branch name (latest)"
         required: true
         type: string
 
@@ -36,7 +26,7 @@ jobs:
   build-and-upload:
     uses: canonical/sdkcraft-actions/.github/workflows/upload.yml@main
     with:
-      platforms: '["amd64"]'
-      platform-flag: "--build-for" # default value, can also be --platform for multi-base SDKs
+      platforms: '["ubuntu@22.04:amd64","ubuntu@22.04:arm64","ubuntu@24.04:amd64","ubuntu@24.04:arm64","ubuntu@26.04:amd64","ubuntu@26.04:arm64"]'
+      platform-flag: "--platform"
     secrets:
       SDKCRAFT_STORE_CREDENTIALS: ${{ secrets.SDKCRAFT_STORE_CREDENTIALS_STAGING }}
